@@ -43,15 +43,18 @@ LANGUAGE HANDLING:
 
 CORE CAPABILITIES:
 1. Product Information: Check inventory, prices, and specifications for computer hardware
-2. Store Information: Hours, location, contact details
-3. Appointments: Book service appointments for repairs and consultations
-4. Order Status: Check existing order status and tracking (streamlined for known customers)
-5. Technical Support: Basic troubleshooting and product recommendations
-6. Extended Services: Through MCP integration, I can access additional tools and services to help with:
+2. Live Product Data: Access real-time product information from armenius.com.cy through live web scraping
+3. Store Information: Hours, location, contact details
+4. Appointments: Book service appointments for repairs and consultations
+5. Order Status: Check existing order status and tracking (streamlined for known customers)
+6. Technical Support: Basic troubleshooting and product recommendations
+7. Extended Services: Through MCP integration, I can access additional tools and services to help with:
+   - Real-time product catalog scraping from armenius.com.cy
+   - Live price and availability checking
+   - Discovery of new products and promotions
    - Sending confirmation emails or SMS messages
    - Creating calendar appointments
    - Integrating with external systems
-   - Accessing additional databases or services
    - Automating follow-up tasks
 
 BUSINESS CONTEXT:
@@ -193,12 +196,55 @@ Remember: You represent Armenius Store's commitment to excellent customer servic
           }
         }
       },
+      {
+        name: "searchLiveProducts",
+        description: "Search for products using live data from armenius.com.cy website for the most current pricing and availability",
+        parameters: {
+          type: "object",
+          properties: {
+            product_query: {
+              type: "string",
+              description: "Product search query (e.g., 'RTX 4090', 'gaming laptop', 'AMD processor')"
+            },
+            category: {
+              type: "string",
+              description: "Product category to filter by (optional)",
+              enum: ["graphics-cards", "processors", "memory", "storage", "motherboards", "laptops", "desktops", "gaming"]
+            },
+            max_results: {
+              type: "number",
+              description: "Maximum number of results to return",
+              default: 5,
+              minimum: 1,
+              maximum: 10
+            }
+          },
+          required: ["product_query"]
+        }
+      },
+      {
+        name: "getLiveProductDetails",
+        description: "Get detailed information about a specific product from the live website",
+        parameters: {
+          type: "object",
+          properties: {
+            product_url: {
+              type: "string",
+              description: "Direct URL to the product page on armenius.com.cy"
+            },
+            product_sku: {
+              type: "string",
+              description: "Product SKU or identifier"
+            }
+          }
+        }
+      },
       
-      // MCP Integration Tool
+      // MCP Integration Tools
       {
         type: "mcp",
-        name: "mcpTools",
-        description: "Access to extended capabilities through MCP server integration including external services and automations",
+        name: "zapierTools",
+        description: "Access to external services and workflow automation through Zapier (7000+ apps)",
         server: {
           url: process.env.MCP_SERVER_URL || "https://mcp.zapier.com/api/mcp/s/YOUR_ZAPIER_MCP_TOKEN/mcp",
           headers: {
@@ -207,7 +253,23 @@ Remember: You represent Armenius Store's commitment to excellent customer servic
           }
         },
         metadata: {
-          protocol: "shttp" // Use Streamable HTTP for better performance
+          protocol: "shttp"
+        }
+      },
+      {
+        type: "mcp",
+        name: "firecrawlTools",
+        description: "Access to live product data and web scraping capabilities for real-time armenius.com.cy information",
+        server: {
+          command: "npx",
+          args: ["-y", "firecrawl-mcp"],
+          env: {
+            FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY || "fc-898a23053eb94662911fb9fc883d22f9"
+          }
+        },
+        metadata: {
+          protocol: "stdio",
+          description: "Provides real-time access to armenius.com.cy product catalog including pricing, availability, and specifications"
         }
       }
     ]

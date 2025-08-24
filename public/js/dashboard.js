@@ -20,13 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize dashboard components
 function initializeDashboard() {
-    // Set default date for appointment demo
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('demo-date').value = tomorrow.toISOString().split('T')[0];
-    
-    // Initialize time slots
-    generateTimeSlots();
+    // Note: Demo functionality removed for production
+    // Production appointments should be handled through live API calls
     
     // Show overview tab by default
     showTab('overview');
