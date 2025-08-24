@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Armenius Voice Assistant - Development Testing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.0.0/dist/vapi.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .transcript-entry {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0057FF 0%, #4F46E5 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">Armenius Voice Assistant</h1>
+                    <p class="text-sm opacity-90">Development Testing Interface</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="connection-status" class="flex items-center">
+                        <div class="w-3 h-3 bg-green-400 rounded-full mr-2 pulse-animation"></div>
+                        <span>Ready</span>
+                    </span>
+                    <button onclick="toggleLanguage()" class="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30">
+                        <span id="language-toggle">🇬🇧 EN</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Voice Call Control Panel -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h2 class="text-xl font-bold mb-6">Voice Agent Testing</h2>
+                    
+                    <!-- Main Call Button -->
+                    <div class="text-center mb-8">
+                        <button id="call-button" onclick="toggleCall()" class="relative">
+                            <div class="w-32 h-32 mx-auto bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shadow-xl">
+                                <i id="call-icon" class="fas fa-phone text-white text-4xl"></i>
+                            </div>
+                            <p id="call-status" class="mt-4 text-lg font-medium">Click to Start Call</p>
+                        </button>
+                    </div>
+
+                    <!-- Call Metrics -->
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-blue-600" id="call-duration">0:00</div>
+                            <div class="text-sm text-gray-600">Duration</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-green-600" id="call-cost">€0.00</div>
+                            <div class="text-sm text-gray-600">Est. Cost</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <div class="text-2xl font-bold text-purple-600" id="response-time">--ms</div>
+                            <div class="text-sm text-gray-600">Response</div>
+                        </div>
+                    </div>
+
+                    <!-- Live Transcript -->
+                    <div class="border-t pt-6">
+                        <h3 class="font-semibold mb-4">Live Conversation Transcript</h3>
+                        <div id="transcript" class="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto space-y-2">
+                            <div class="text-gray-500 text-sm">Transcript will appear here when call starts...</div>
+                        </div>
+                    </div>
+
+                    <!-- Function Calls Log -->
+                    <div class="border-t pt-6 mt-6">
+                        <h3 class="font-semibold mb-4">Function Calls</h3>
+                        <div id="function-calls" class="bg-gray-50 rounded-lg p-4 h-32 overflow-y-auto">
+                            <div class="text-gray-500 text-sm">Function calls will appear here...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Test Panel -->
+            <div class="lg:col-span-1">
+                <!-- Test Scenarios -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h3 class="text-lg font-bold mb-4">Test Scenarios</h3>
+                    <div class="space-y-3">
+                        <button onclick="startScenario('inventory')" class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                            <div class="font-medium">Check Inventory</div>
+                            <div class="text-sm text-gray-600">Ask about RTX 4090 availability</div>
+                        </button>
+                        <button onclick="startScenario('price')" class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                            <div class="font-medium">Get Pricing</div>
+                            <div class="text-sm text-gray-600">Ask about Intel i9 prices</div>
+                        </button>
+                        <button onclick="startScenario('appointment')" class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                            <div class="font-medium">Book Appointment</div>
+                            <div class="text-sm text-gray-600">Schedule a repair service</div>
+                        </button>
+                        <button onclick="startScenario('greek')" class="w-full text-left px-4 py-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+                            <div class="font-medium">Greek Language</div>
+                            <div class="text-sm text-gray-600">Καλημέρα, θέλω πληροφορίες</div>
+                        </button>
+                        <button onclick="startScenario('hours')" class="w-full text-left px-4 py-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
+                            <div class="font-medium">Store Hours</div>
+                            <div class="text-sm text-gray-600">Ask about opening hours</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Manual Function Testing -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold mb-4">Manual Function Test</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Function</label>
+                            <select id="test-function" class="w-full px-3 py-2 border rounded-lg">
+                                <option value="checkInventory">Check Inventory</option>
+                                <option value="getProductPrice">Get Price</option>
+                                <option value="bookAppointment">Book Appointment</option>
+                                <option value="checkOrderStatus">Order Status</option>
+                                <option value="getStoreInfo">Store Info</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Parameters</label>
+                            <input type="text" id="test-params" placeholder='{"product": "RTX 4090"}' class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <button onclick="testFunction()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-play mr-2"></i>Test Function
+                        </button>
+                        <div id="test-result" class="mt-4 p-3 bg-gray-50 rounded-lg text-sm font-mono hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Bar -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-lg font-bold mb-4">System Status</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="text-sm text-gray-600">Vapi Status</div>
+                    <div class="font-medium" id="vapi-status">
+                        <span class="text-green-600">Connected</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm text-gray-600">API Endpoint</div>
+                    <div class="font-medium" id="api-status">
+                        <span class="text-green-600">Online</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm text-gray-600">Database</div>
+                    <div class="font-medium" id="db-status">
+                        <span class="text-green-600">Connected</span>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm text-gray-600">Functions</div>
+                    <div class="font-medium" id="functions-status">
+                        <span class="text-green-600">5 Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/config.js"></script>
+    <script>
+        // Secure configuration - NO sensitive data in frontend
+        let vapi;
+        let isCallActive = false;
+        let callStartTime = null;
+        let callTimer = null;
+        let currentLanguage = 'en';
+        let appConfig = null;
+        
+        // Initialize application securely
+        async function initializeApp() {
+            try {
+                // Load secure configuration from backend
+                appConfig = await secureConfig.loadConfig();
+                console.log('Configuration loaded:', appConfig.systemStatus);
+                
+                // Update UI with system status
+                updateSystemStatus();
+                
+                // Initialize Vapi securely
+                await initializeVapi();
+                
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                showError('Failed to initialize application. Please refresh the page.');
+            }
+        }
+        
+        // Initialize Vapi securely through backend
+        async function initializeVapi() {
+            try {
+                // Check if Vapi is configured on backend
+                if (!appConfig?.systemStatus?.hasVapiConfig) {
+                    throw new Error('Vapi not configured on backend');
+                }
+                
+                // Initialize Vapi session through secure backend endpoint
+                const vapiSession = await secureConfig.initVapiSession(currentLanguage);
+                
+                // Note: We don't use Vapi Web SDK with exposed keys anymore
+                // Instead, we'll use a different approach for testing
+                console.log('✅ Vapi session ready through secure backend');
+                
+                // Set up event listeners
+                vapi.on('call-start', () => {
+                    console.log('Call started');
+                    isCallActive = true;
+                    callStartTime = Date.now();
+                    updateCallUI(true);
+                    startCallTimer();
+                });
+                
+                vapi.on('call-end', () => {
+                    console.log('Call ended');
+                    isCallActive = false;
+                    updateCallUI(false);
+                    stopCallTimer();
+                });
+                
+                vapi.on('message', (message) => {
+                    handleVapiMessage(message);
+                });
+                
+                vapi.on('error', (error) => {
+                    console.error('Vapi error:', error);
+                    addToTranscript('System', 'Error: ' + error.message, 'error');
+                });
+                
+                console.log('Vapi initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize Vapi:', error);
+                document.getElementById('vapi-status').innerHTML = '<span class="text-red-600">Disconnected</span>';
+            }
+        }
+        
+        // Toggle call state
+        async function toggleCall() {
+            if (!isCallActive) {
+                startCall();
+            } else {
+                endCall();
+            }
+        }
+        
+        // Start voice call
+        async function startCall() {
+            try {
+                await vapi.start({
+                    assistantId: VAPI_ASSISTANT_ID,
+                    assistantOverrides: {
+                        firstMessage: currentLanguage === 'el' 
+                            ? "Καλημέρα! Είμαι η Μαρία από το Armenius Store. Πώς μπορώ να σας βοηθήσω σήμερα;"
+                            : "Hello! I'm Maria from Armenius Store. How can I help you today?",
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to start call:', error);
+                alert('Failed to start call. Please check your microphone permissions.');
+            }
+        }
+        
+        // End voice call
+        async function endCall() {
+            try {
+                await vapi.stop();
+            } catch (error) {
+                console.error('Failed to end call:', error);
+            }
+        }
+        
+        // Handle Vapi messages
+        function handleVapiMessage(message) {
+            console.log('Vapi message:', message);
+            
+            if (message.type === 'transcript') {
+                if (message.role === 'user') {
+                    addToTranscript('You', message.transcript, 'user');
+                } else if (message.role === 'assistant') {
+                    addToTranscript('Maria', message.transcript, 'assistant');
+                }
+            } else if (message.type === 'function-call') {
+                logFunctionCall(message.functionCall);
+            } else if (message.type === 'latency') {
+                document.getElementById('response-time').textContent = message.latency + 'ms';
+            }
+        }
+        
+        // Add message to transcript
+        function addToTranscript(speaker, text, type) {
+            const transcript = document.getElementById('transcript');
+            const entry = document.createElement('div');
+            entry.className = 'transcript-entry';
+            
+            if (type === 'user') {
+                entry.innerHTML = `<div class="flex items-start space-x-2">
+                    <span class="font-medium text-blue-600">${speaker}:</span>
+                    <span>${text}</span>
+                </div>`;
+            } else if (type === 'assistant') {
+                entry.innerHTML = `<div class="flex items-start space-x-2">
+                    <span class="font-medium text-green-600">${speaker}:</span>
+                    <span>${text}</span>
+                </div>`;
+            } else {
+                entry.innerHTML = `<div class="text-red-600">${text}</div>`;
+            }
+            
+            transcript.appendChild(entry);
+            transcript.scrollTop = transcript.scrollHeight;
+        }
+        
+        // Log function calls
+        function logFunctionCall(functionCall) {
+            const log = document.getElementById('function-calls');
+            const entry = document.createElement('div');
+            entry.className = 'text-sm mb-2';
+            entry.innerHTML = `
+                <div class="font-medium text-purple-600">${functionCall.name}</div>
+                <div class="text-gray-600">${JSON.stringify(functionCall.parameters)}</div>
+            `;
+            
+            if (log.children[0]?.textContent.includes('Function calls will appear')) {
+                log.innerHTML = '';
+            }
+            
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Update call UI
+        function updateCallUI(active) {
+            const button = document.getElementById('call-button');
+            const icon = document.getElementById('call-icon');
+            const status = document.getElementById('call-status');
+            const connectionStatus = document.getElementById('connection-status');
+            
+            if (active) {
+                button.children[0].className = 'w-32 h-32 mx-auto bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shadow-xl pulse-animation';
+                icon.className = 'fas fa-phone-slash text-white text-4xl';
+                status.textContent = 'Click to End Call';
+                connectionStatus.innerHTML = '<div class="w-3 h-3 bg-green-400 rounded-full mr-2 pulse-animation"></div><span>On Call</span>';
+            } else {
+                button.children[0].className = 'w-32 h-32 mx-auto bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer shadow-xl';
+                icon.className = 'fas fa-phone text-white text-4xl';
+                status.textContent = 'Click to Start Call';
+                connectionStatus.innerHTML = '<div class="w-3 h-3 bg-green-400 rounded-full mr-2"></div><span>Ready</span>';
+            }
+        }
+        
+        // Call timer
+        function startCallTimer() {
+            callTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('call-duration').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Estimate cost (€0.32 per call average, calculated per second)
+                const costPerSecond = 0.32 / 180; // Assuming 3 minute average call
+                const estimatedCost = (elapsed * costPerSecond).toFixed(2);
+                document.getElementById('call-cost').textContent = `€${estimatedCost}`;
+            }, 1000);
+        }
+        
+        function stopCallTimer() {
+            if (callTimer) {
+                clearInterval(callTimer);
+                callTimer = null;
+            }
+        }
+        
+        // Test scenarios
+        function startScenario(scenario) {
+            const scenarios = {
+                inventory: "Do you have the RTX 4090 graphics card in stock?",
+                price: "What's the price of the Intel Core i9-13900K processor?",
+                appointment: "I need to book an appointment for computer repair",
+                greek: "Καλημέρα, έχετε διαθέσιμη την κάρτα γραφικών RTX 4090;",
+                hours: "What are your store hours today?"
+            };
+            
+            if (scenarios[scenario]) {
+                addToTranscript('Test Scenario', scenarios[scenario], 'user');
+                // In a real implementation, this would trigger the voice input
+                alert(`To test this scenario, start a call and say:\n\n"${scenarios[scenario]}"`);
+            }
+        }
+        
+        // Manual function testing - secure backend calls
+        async function testFunction() {
+            const functionName = document.getElementById('test-function').value;
+            const params = document.getElementById('test-params').value;
+            const resultDiv = document.getElementById('test-result');
+            
+            try {
+                const parameters = params ? JSON.parse(params) : {};
+                
+                // Use secure backend API for function testing
+                const result = await secureConfig.testFunction(functionName, parameters);
+                
+                resultDiv.className = 'mt-4 p-3 bg-gray-50 rounded-lg text-sm font-mono';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+                
+                logFunctionCall({ name: functionName, parameters });
+            } catch (error) {
+                resultDiv.className = 'mt-4 p-3 bg-red-50 rounded-lg text-sm text-red-600';
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        // Toggle language
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'el' : 'en';
+            const toggle = document.getElementById('language-toggle');
+            toggle.textContent = currentLanguage === 'en' ? '🇬🇧 EN' : '🇬🇷 EL';
+        }
+        
+        // Update system status display
+        function updateSystemStatus() {
+            if (!appConfig?.systemStatus) return;
+            
+            const status = appConfig.systemStatus;
+            
+            // Update status indicators
+            document.getElementById('vapi-status').innerHTML = status.hasVapiConfig 
+                ? '<span class="text-green-600">Configured</span>'
+                : '<span class="text-red-600">Not Configured</span>';
+                
+            document.getElementById('api-status').innerHTML = '<span class="text-green-600">Online</span>';
+            
+            document.getElementById('db-status').innerHTML = status.hasSupabaseConfig
+                ? '<span class="text-green-600">Connected</span>'
+                : '<span class="text-yellow-600">Limited</span>';
+                
+            document.getElementById('functions-status').innerHTML = 
+                `<span class="text-green-600">${appConfig.functions?.length || 0} Active</span>`;
+        }
+        
+        // Check system health
+        async function checkSystemHealth() {
+            try {
+                const health = await secureConfig.getSystemStatus();
+                console.log('System health:', health);
+                
+                // Update status based on health check
+                if (health.status === 'healthy') {
+                    document.getElementById('api-status').innerHTML = '<span class="text-green-600">Online</span>';
+                } else if (health.status === 'degraded') {
+                    document.getElementById('api-status').innerHTML = '<span class="text-yellow-600">Limited</span>';
+                } else {
+                    document.getElementById('api-status').innerHTML = '<span class="text-red-600">Issues</span>';
+                }
+            } catch (error) {
+                document.getElementById('api-status').innerHTML = '<span class="text-red-600">Offline</span>';
+            }
+        }
+        
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50';
+            errorDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (document.body.contains(errorDiv)) {
+                    document.body.removeChild(errorDiv);
+                }
+            }, 10000);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            
+            // Check health every 30 seconds
+            setInterval(checkSystemHealth, 30000);
+        });
+    </script>
+</body>
+</html>
