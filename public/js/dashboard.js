@@ -7,9 +7,9 @@ let vapi = null;
 let isCallActive = false;
 
 // Initialize dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initializeDashboard();
-    initializeVapi();
+    await initializeVapi(); // Wait for Vapi initialization
     loadSystemStatus();
     loadRecentActivity();
     loadProducts();
@@ -827,66 +827,71 @@ function createMockVapi() {
 }
 
 // Initialize Vapi for voice calls
-function initializeVapi() {
+async function initializeVapi() {
     try {
-        // For now, use a simple configuration approach since we need the public key
-        // The public key is safe to expose in frontend (it's meant to be public)
-        if (typeof window.Vapi !== 'undefined') {
-            // You need to set your actual Vapi public key here
-            const publicKey = 'pk_your_actual_vapi_public_key_here'; // Replace with your actual public key
+        // Load configuration from backend API
+        const configResponse = await fetch('/api/config');
+        const configData = await configResponse.json();
+        const publicKey = configData?.vapi?.publicKey;
+        
+        console.log('🔧 Vapi config loaded:', { 
+            hasPublicKey: !!publicKey, 
+            publicKey: publicKey ? `${publicKey.substring(0, 8)}...` : 'none',
+            assistantId: configData?.vapi?.assistantId
+        });
+        
+        if (typeof window.Vapi !== 'undefined' && publicKey) {
+            // Initialize real Vapi with public key from backend
+            vapi = new window.Vapi(publicKey);
+            console.log('✅ Real Vapi initialized with backend public key');
             
-            if (publicKey && publicKey !== 'pk_your_actual_vapi_public_key_here') {
-                vapi = new window.Vapi(publicKey);
-                
-                // Set up event listeners
-                vapi.on('call-start', () => {
-                    console.log('Call started');
-                    updateCallStatus('Connected to Maria', 'text-green-600');
-                    updateCallButton('End Call', 'fas fa-phone-slash', 'bg-red-500 hover:bg-red-600');
-                    isCallActive = true;
-                });
-                
-                vapi.on('call-end', () => {
-                    console.log('Call ended');
-                    updateCallStatus('Call ended', 'text-gray-600');
-                    updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
-                    isCallActive = false;
-                    setTimeout(hideCallStatus, 2000);
-                });
-                
-                vapi.on('error', (error) => {
-                    console.error('Vapi error:', error);
-                    updateCallStatus('Connection error', 'text-red-600');
-                    updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
-                    isCallActive = false;
-                    setTimeout(hideCallStatus, 3000);
-                });
-                
-                vapi.on('speech-start', () => {
-                    updateCallStatus('Maria is listening...', 'text-blue-600');
-                });
-                
-                vapi.on('speech-end', () => {
-                    updateCallStatus('Maria is thinking...', 'text-orange-600');
-                });
-                
-                vapi.on('message', (message) => {
-                    if (message.type === 'transcript') {
-                        console.log('Transcript:', message.transcript);
-                    }
-                });
-                
-            } else {
-                console.warn('Vapi public key not configured - using mock interface for testing');
-                vapi = createMockVapi();
-            }
+            // Set up event listeners for real Vapi
+            vapi.on('call-start', () => {
+                console.log('📞 Real Vapi call started');
+                updateCallStatus('Connected to Maria', 'text-green-600');
+                updateCallButton('End Call', 'fas fa-phone-slash', 'bg-red-500 hover:bg-red-600');
+                isCallActive = true;
+            });
+            
+            vapi.on('call-end', () => {
+                console.log('📞 Real Vapi call ended');
+                updateCallStatus('Call ended', 'text-gray-600');
+                updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
+                isCallActive = false;
+                setTimeout(hideCallStatus, 2000);
+            });
+            
+            vapi.on('error', (error) => {
+                console.error('❌ Real Vapi error:', error);
+                updateCallStatus('Connection error', 'text-red-600');
+                updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
+                isCallActive = false;
+                setTimeout(hideCallStatus, 3000);
+            });
+            
+            vapi.on('speech-start', () => {
+                updateCallStatus('Maria is listening...', 'text-blue-600');
+            });
+            
+            vapi.on('speech-end', () => {
+                updateCallStatus('Maria is thinking...', 'text-orange-600');
+            });
+            
+            vapi.on('message', (message) => {
+                if (message.type === 'transcript') {
+                    console.log('📝 Transcript:', message.transcript);
+                }
+            });
+            
         } else {
-            console.warn('Vapi SDK not loaded - using mock interface for testing');
+            console.warn('⚠️ No public key found or Vapi SDK not loaded - using mock interface');
             vapi = createMockVapi();
         }
         
     } catch (error) {
-        console.error('Failed to initialize Vapi:', error);
+        console.error('❌ Failed to initialize Vapi:', error);
+        console.log('🎭 Falling back to mock interface');
+        vapi = createMockVapi();
     }
 }
 
@@ -910,51 +915,36 @@ function startVoiceCall() {
         updateCallStatus('Connecting to Maria...', 'text-blue-600');
         updateCallButton('Connecting...', 'fas fa-spinner fa-spin', 'bg-gray-500');
         
-        // Start the call with your assistant configuration
-        vapi.start({
-            // Use assistant configuration directly since we don't have assistant ID yet
-            assistant: {
-                name: "Armenius Store Assistant",
-                voice: {
-                    provider: "11labs",
-                    voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
-                    settings: {
-                        stability: 0.5,
-                        similarityBoost: 0.75,
-                        style: 0.4,
-                        useSpeakerBoost: true
-                    }
-                },
-                model: {
-                    provider: "openai", 
-                    model: "gpt-4o-mini",
-                    temperature: 0.7,
-                    maxTokens: 250,
-                    systemPrompt: `You are Maria, a helpful assistant at Armenius Store in Cyprus.
-                    
-You help customers with:
-- Product availability and pricing for computer hardware
-- Store hours, location, and contact information  
-- Service appointments for repairs and consultations
-- Order status and tracking
-- Technical support and recommendations
-
-Personality: Professional, friendly, knowledgeable about computers.
-Language: Respond in the same language as the customer (Greek or English).
-Always confirm important details and keep responses concise but helpful.
-
-Store Info: Located at 171 Makarios Avenue, Nicosia, Cyprus. Phone: 77-111-104. 
-Hours: Monday-Friday 9am-7pm, Saturday 9am-2pm, Sunday closed.`
-                },
-                transcriber: {
-                    provider: "deepgram",
-                    model: "nova-2", 
-                    language: "multi"
-                },
-                firstMessage: "Welcome to Armenius Store! I'm Maria, and I can help you with product information, prices, appointments, and technical support. How can I assist you today?",
-                serverUrl: window.location.origin + "/api/vapi"
-            }
-        });
+        // Load assistant configuration from backend
+        const configResponse = await fetch('/api/config');
+        const configData = await configResponse.json();
+        const assistantId = configData?.vapi?.assistantId;
+        
+        console.log('🎯 Starting call with assistant:', assistantId);
+        
+        // Start the call with assistant ID (preferred for production)
+        if (assistantId) {
+            vapi.start({
+                assistantId: assistantId
+            });
+        } else {
+            // Fallback to direct assistant configuration if no ID
+            console.warn('⚠️ No assistant ID found, using fallback configuration');
+            vapi.start({
+                assistant: {
+                    name: "Armenius Store Assistant",
+                    voice: {
+                        provider: "11labs",
+                        voiceId: "21m00Tcm4TlvDq8ikWAM"
+                    },
+                    model: {
+                        provider: "openai", 
+                        model: "gpt-4o-mini"
+                    },
+                    firstMessage: "Welcome to Armenius Store! I'm Maria, your AI assistant. How can I help you today?"
+                }
+            });
+        }
         
     } catch (error) {
         console.error('Failed to start voice call:', error);
