@@ -896,7 +896,7 @@ async function initializeVapi() {
 }
 
 // Start voice call
-function startVoiceCall() {
+async function startVoiceCall() {
     if (isCallActive) {
         // End the call
         if (vapi) {
