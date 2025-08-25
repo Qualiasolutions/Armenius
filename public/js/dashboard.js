@@ -895,8 +895,16 @@ async function initializeVapi() {
     }
 }
 
-// Start voice call
-async function startVoiceCall() {
+// Start voice call (wrapper for HTML onclick)
+function startVoiceCall() {
+    handleVoiceCall().catch(error => {
+        console.error('Voice call error:', error);
+        showNotification('Failed to start voice call. Please try again.', 'error');
+    });
+}
+
+// Handle voice call (async implementation)
+async function handleVoiceCall() {
     if (isCallActive) {
         // End the call
         if (vapi) {
