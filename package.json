@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "cd frontend && npm run dev",
     "build": "echo 'No build step required for serverless functions'",
+    "deploy": "vercel --prod",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
@@ -16,6 +17,7 @@
     "db:migrate": "supabase db push",
     "db:reset": "supabase db reset",
     "cache:warm": "node scripts/warm-cache.js",
+    "logs": "vercel logs --follow",
     "test:mcp": "node scripts/test-mcp-setup.js",
     "test:voice": "node scripts/test-voice-integration.js"
   },

@@ -438,7 +438,9 @@ Remember: You represent Armenius Store's commitment to excellent customer servic
   },
 
   // Server configuration for webhooks
-  serverUrl: process.env.WEBHOOK_URL || "http://localhost:3000/api/vapi",
+  serverUrl: process.env.NODE_ENV === 'production' 
+    ? `https://${process.env.VERCEL_URL}/api/vapi`
+    : "http://localhost:3000/api/vapi",
   
   serverUrlSecret: process.env.VAPI_SERVER_SECRET,
 
