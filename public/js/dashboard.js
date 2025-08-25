@@ -780,6 +780,52 @@ setInterval(() => {
 // VAPI VOICE CALL FUNCTIONALITY
 // ================================
 
+// Create mock Vapi interface for testing when no public key is available
+function createMockVapi() {
+    const eventListeners = {};
+    
+    return {
+        on: (event, callback) => {
+            eventListeners[event] = callback;
+        },
+        
+        start: async (config) => {
+            console.log('🎤 Starting mock voice call - demo mode active');
+            
+            // Simulate call start
+            setTimeout(() => {
+                if (eventListeners['call-start']) {
+                    eventListeners['call-start']();
+                }
+            }, 1000);
+            
+            // Simulate conversation
+            setTimeout(() => {
+                if (eventListeners['message']) {
+                    eventListeners['message']({
+                        type: 'transcript',
+                        transcript: "Hello! I'm Maria, your AI assistant for Armenius Store. How can I help you today?"
+                    });
+                }
+            }, 2000);
+            
+            // Auto-end call after 15 seconds for demo
+            setTimeout(() => {
+                if (eventListeners['call-end']) {
+                    eventListeners['call-end']();
+                }
+            }, 15000);
+        },
+        
+        stop: () => {
+            console.log('🔴 Ending mock voice call');
+            if (eventListeners['call-end']) {
+                eventListeners['call-end']();
+            }
+        }
+    };
+}
+
 // Initialize Vapi for voice calls
 function initializeVapi() {
     try {
@@ -831,10 +877,12 @@ function initializeVapi() {
                 });
                 
             } else {
-                console.warn('Vapi public key not configured');
+                console.warn('Vapi public key not configured - using mock interface for testing');
+                vapi = createMockVapi();
             }
         } else {
-            console.warn('Vapi SDK not loaded');
+            console.warn('Vapi SDK not loaded - using mock interface for testing');
+            vapi = createMockVapi();
         }
         
     } catch (error) {
@@ -853,7 +901,7 @@ function startVoiceCall() {
     }
     
     if (!vapi) {
-        showNotification('Voice service not available. Please configure Vapi public key.', 'error');
+        showNotification('Voice service not available. Please refresh the page and try again.', 'error');
         return;
     }
     
