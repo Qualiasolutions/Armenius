@@ -91,7 +91,7 @@ export const assistantConfig = {
     smartFormat: true,
     keywords: ["RTX", "GeForce", "AMD", "Ryzen", "Intel", "Core"]
   },
-  serverUrl: "https://armenius-voice.vercel.app/api/vapi",
+  serverUrl: process.env.WEBHOOK_URL || "http://localhost:3000/api/vapi",
   serverUrlSecret: process.env.VAPI_SERVER_SECRET
 };
 ```
@@ -558,7 +558,7 @@ export const alerts = {
 ### 8. Deployment Configuration
 
 ```yaml
-# vercel.json
+# Platform Configuration (previously vercel.json)
 {
   "functions": {
     "api/vapi/route.js": {

@@ -3,10 +3,13 @@
 
 let currentLanguage = 'en';
 let charts = {};
+let vapi = null;
+let isCallActive = false;
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboard();
+    initializeVapi();
     loadSystemStatus();
     loadRecentActivity();
     loadProducts();
@@ -772,3 +775,185 @@ setInterval(() => {
         }
     });
 }, 5000);
+
+// ================================
+// VAPI VOICE CALL FUNCTIONALITY
+// ================================
+
+// Initialize Vapi for voice calls
+function initializeVapi() {
+    try {
+        // For now, use a simple configuration approach since we need the public key
+        // The public key is safe to expose in frontend (it's meant to be public)
+        if (typeof window.Vapi !== 'undefined') {
+            // You need to set your actual Vapi public key here
+            const publicKey = 'pk_your_actual_vapi_public_key_here'; // Replace with your actual public key
+            
+            if (publicKey && publicKey !== 'pk_your_actual_vapi_public_key_here') {
+                vapi = new window.Vapi(publicKey);
+                
+                // Set up event listeners
+                vapi.on('call-start', () => {
+                    console.log('Call started');
+                    updateCallStatus('Connected to Maria', 'text-green-600');
+                    updateCallButton('End Call', 'fas fa-phone-slash', 'bg-red-500 hover:bg-red-600');
+                    isCallActive = true;
+                });
+                
+                vapi.on('call-end', () => {
+                    console.log('Call ended');
+                    updateCallStatus('Call ended', 'text-gray-600');
+                    updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
+                    isCallActive = false;
+                    setTimeout(hideCallStatus, 2000);
+                });
+                
+                vapi.on('error', (error) => {
+                    console.error('Vapi error:', error);
+                    updateCallStatus('Connection error', 'text-red-600');
+                    updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
+                    isCallActive = false;
+                    setTimeout(hideCallStatus, 3000);
+                });
+                
+                vapi.on('speech-start', () => {
+                    updateCallStatus('Maria is listening...', 'text-blue-600');
+                });
+                
+                vapi.on('speech-end', () => {
+                    updateCallStatus('Maria is thinking...', 'text-orange-600');
+                });
+                
+                vapi.on('message', (message) => {
+                    if (message.type === 'transcript') {
+                        console.log('Transcript:', message.transcript);
+                    }
+                });
+                
+            } else {
+                console.warn('Vapi public key not configured');
+            }
+        } else {
+            console.warn('Vapi SDK not loaded');
+        }
+        
+    } catch (error) {
+        console.error('Failed to initialize Vapi:', error);
+    }
+}
+
+// Start voice call
+function startVoiceCall() {
+    if (isCallActive) {
+        // End the call
+        if (vapi) {
+            vapi.stop();
+        }
+        return;
+    }
+    
+    if (!vapi) {
+        showNotification('Voice service not available. Please configure Vapi public key.', 'error');
+        return;
+    }
+    
+    try {
+        showCallStatus();
+        updateCallStatus('Connecting to Maria...', 'text-blue-600');
+        updateCallButton('Connecting...', 'fas fa-spinner fa-spin', 'bg-gray-500');
+        
+        // Start the call with your assistant configuration
+        vapi.start({
+            // Use assistant configuration directly since we don't have assistant ID yet
+            assistant: {
+                name: "Armenius Store Assistant",
+                voice: {
+                    provider: "11labs",
+                    voiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel voice
+                    settings: {
+                        stability: 0.5,
+                        similarityBoost: 0.75,
+                        style: 0.4,
+                        useSpeakerBoost: true
+                    }
+                },
+                model: {
+                    provider: "openai", 
+                    model: "gpt-4o-mini",
+                    temperature: 0.7,
+                    maxTokens: 250,
+                    systemPrompt: `You are Maria, a helpful assistant at Armenius Store in Cyprus.
+                    
+You help customers with:
+- Product availability and pricing for computer hardware
+- Store hours, location, and contact information  
+- Service appointments for repairs and consultations
+- Order status and tracking
+- Technical support and recommendations
+
+Personality: Professional, friendly, knowledgeable about computers.
+Language: Respond in the same language as the customer (Greek or English).
+Always confirm important details and keep responses concise but helpful.
+
+Store Info: Located at 171 Makarios Avenue, Nicosia, Cyprus. Phone: 77-111-104. 
+Hours: Monday-Friday 9am-7pm, Saturday 9am-2pm, Sunday closed.`
+                },
+                transcriber: {
+                    provider: "deepgram",
+                    model: "nova-2", 
+                    language: "multi"
+                },
+                firstMessage: "Welcome to Armenius Store! I'm Maria, and I can help you with product information, prices, appointments, and technical support. How can I assist you today?",
+                serverUrl: window.location.origin + "/api/vapi"
+            }
+        });
+        
+    } catch (error) {
+        console.error('Failed to start voice call:', error);
+        showNotification('Failed to start voice call. Please try again.', 'error');
+        updateCallButton('Start Voice Call', 'fas fa-microphone', 'bg-armenius-blue hover:bg-blue-700');
+        hideCallStatus();
+    }
+}
+
+// Update call status display
+function updateCallStatus(message, textClass) {
+    const statusElement = document.getElementById('callStatus');
+    if (statusElement) {
+        statusElement.innerHTML = `
+            <div class="inline-flex items-center">
+                <div class="w-2 h-2 ${textClass.replace('text-', 'bg-')} rounded-full mr-2 animate-pulse"></div>
+                <span class="${textClass}">${message}</span>
+            </div>
+        `;
+    }
+}
+
+// Update call button appearance
+function updateCallButton(text, iconClass, bgClass) {
+    const button = document.getElementById('voiceCallBtn');
+    const icon = document.getElementById('voiceIcon');
+    const textElement = document.getElementById('voiceText');
+    
+    if (button && icon && textElement) {
+        button.className = `inline-flex items-center px-8 py-4 ${bgClass} text-white font-bold text-lg rounded-full shadow-lg transform transition-all hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300`;
+        icon.className = `${iconClass} mr-3 text-xl`;
+        textElement.textContent = text;
+    }
+}
+
+// Show call status
+function showCallStatus() {
+    const statusElement = document.getElementById('callStatus');
+    if (statusElement) {
+        statusElement.classList.remove('hidden');
+    }
+}
+
+// Hide call status
+function hideCallStatus() {
+    const statusElement = document.getElementById('callStatus');
+    if (statusElement) {
+        statusElement.classList.add('hidden');
+    }
+}

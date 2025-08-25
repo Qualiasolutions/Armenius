@@ -29,6 +29,12 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Vapi SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/index.js"></script>
+    
+    <!-- Configuration -->
+    <script src="/config.js"></script>
+    
     <style>
       .gradient-bg {
         background: linear-gradient(135deg, #0057FF 0%, #4F46E5 100%);
@@ -89,6 +95,46 @@
           Experience our production-ready AI voice assistant handling product inquiries, appointments, and technical support in both Greek and English with €0.32/call efficiency.
         </p>
         
+        <!-- Voice Call Section -->
+        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">
+            <i class="fas fa-phone text-armenius-blue mr-3"></i>
+            Test Voice Assistant
+          </h3>
+          <p class="text-gray-600 mb-6 text-center">
+            Click to start a voice conversation with Maria, your AI assistant
+          </p>
+          
+          <!-- Voice Call Button -->
+          <div class="text-center">
+            <button id="voiceCallBtn" onclick="startVoiceCall()" class="inline-flex items-center px-8 py-4 bg-armenius-blue hover:bg-blue-700 text-white font-bold text-lg rounded-full shadow-lg transform transition-all hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+              <i id="voiceIcon" class="fas fa-microphone mr-3 text-xl"></i>
+              <span id="voiceText">Start Voice Call</span>
+            </button>
+          </div>
+          
+          <!-- Call Status -->
+          <div id="callStatus" class="mt-6 text-center text-gray-600 hidden">
+            <div class="inline-flex items-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-armenius-blue mr-2"></div>
+              <span>Connecting to Maria...</span>
+            </div>
+          </div>
+          
+          <!-- Voice Instructions -->
+          <div class="mt-6 bg-gray-50 rounded-lg p-4">
+            <h4 class="font-semibold text-gray-900 mb-2">Voice Assistant Capabilities:</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+              <div><i class="fas fa-search mr-2 text-armenius-blue"></i>Product availability & pricing</div>
+              <div><i class="fas fa-calendar mr-2 text-armenius-blue"></i>Service appointments</div>
+              <div><i class="fas fa-tools mr-2 text-armenius-blue"></i>Custom PC building</div>
+              <div><i class="fas fa-truck mr-2 text-armenius-blue"></i>Order tracking</div>
+              <div><i class="fas fa-store mr-2 text-armenius-blue"></i>Store information</div>
+              <div><i class="fas fa-language mr-2 text-armenius-blue"></i>Greek & English support</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Key Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div class="bg-white rounded-xl shadow-lg p-6">

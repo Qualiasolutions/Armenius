@@ -245,19 +245,17 @@ Per-Call Cost:                     €0.37
 
 ### Production Deployment
 ```bash
-# 1. Configure Vercel environment variables
-vercel env add VAPI_API_KEY
-vercel env add SUPABASE_URL
-# ... (add all required environment variables)
+# 1. Configure environment variables in your deployment platform
+# Set all required environment variables listed in PRODUCTION-SETUP.md
 
-# 2. Deploy to production
-npm run deploy
+# 2. Deploy to your chosen platform (AWS, Railway, etc.)
+# Follow your platform's deployment process
 
 # 3. Configure Vapi webhook URL
-# Set webhook URL in Vapi dashboard to: https://your-domain.vercel.app/api/vapi
+# Set webhook URL in Vapi dashboard to: https://your-domain.com/api/vapi
 
 # 4. Test production deployment
-curl https://your-domain.vercel.app/api/vapi
+curl https://your-domain.com/api/vapi
 ```
 
 ### Database Migration
@@ -272,10 +270,10 @@ npx supabase db diff
 ### Cache Warmup
 ```bash
 # Manual cache warmup
-curl https://your-domain.vercel.app/api/cron/warmup-cache
+curl https://your-domain.com/api/cron/warmup-cache
 
 # Verify cache status
-curl https://your-domain.vercel.app/api/vapi
+curl https://your-domain.com/api/vapi
 ```
 
 ## 🧪 Testing

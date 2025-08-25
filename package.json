@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "cd frontend && npm run dev",
     "build": "echo 'No build step required for serverless functions'",
-    "deploy": "vercel --prod",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
@@ -17,7 +16,6 @@
     "db:migrate": "supabase db push",
     "db:reset": "supabase db reset",
     "cache:warm": "node scripts/warm-cache.js",
-    "logs": "vercel logs --follow",
     "test:mcp": "node scripts/test-mcp-setup.js",
     "test:voice": "node scripts/test-voice-integration.js"
   },
@@ -27,7 +25,6 @@
     "customer-service",
     "cyprus",
     "computer-store",
-    "vercel",
     "supabase"
   ],
   "author": "Qualia Solutions",
@@ -36,7 +33,6 @@
     "@modelcontextprotocol/sdk": "^1.17.4",
     "@supabase/supabase-js": "^2.45.0",
     "@upstash/redis": "^1.34.0",
-    "@vercel/analytics": "^1.3.1",
     "crypto": "^1.0.1",
     "lru-cache": "^10.2.0",
     "openai": "^4.63.0",
@@ -56,10 +52,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/qualia-solutions/armenius-voice-assistant"
+    "url": "https://github.com/Qualiasolutions/armenius"
   },
   "bugs": {
-    "url": "https://github.com/qualia-solutions/armenius-voice-assistant/issues"
+    "url": "https://github.com/Qualiasolutions/armenius/issues"
   },
-  "homepage": "https://github.com/qualia-solutions/armenius-voice-assistant#readme"
+  "homepage": "https://github.com/Qualiasolutions/armenius#readme"
 }

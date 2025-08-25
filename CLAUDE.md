@@ -85,10 +85,9 @@ Performance-critical caching system (`lib/cache/index.js`):
 │   ├── webhook.test.js       # Webhook handler tests
 │   └── mcp-integration.test.js # MCP integration tests
 ├── migrations/               # Database schema migrations (SQL files)
-├── supabase/                 # Supabase configuration and migrations
-│   ├── config.toml          # Local Supabase configuration
-│   └── migrations/          # Supabase migration files
-└── vercel.json              # Vercel deployment configuration
+└── supabase/                 # Supabase configuration and migrations
+    ├── config.toml          # Local Supabase configuration
+    └── migrations/          # Supabase migration files
 ```
 
 ## Development Commands
@@ -125,13 +124,16 @@ curl /api/cron/product-sync  # Manually sync products from armenius.com.cy
 npm run test:mcp             # Test MCP configuration and connectivity
 npm run test:voice           # Test complete voice agent + live data integration
 
+# Documentation
+# See VOICE-AGENT-CAPABILITIES.md for detailed voice interaction examples
+# See ORDER-TRACKING-CAPABILITIES.md for order tracking and arrival notifications
+
 # Advanced Operations
 node -e "import('./lib/functions/firecrawl-integration.js').then(m => m.scrapeArmeniusProducts())" # Direct product scraping
 
 # Deployment & Monitoring
-npm run deploy               # Deploy to Vercel production
-npm run logs                 # View recent deployment logs
-vercel logs --follow         # Monitor real-time production logs
+# Deploy to your chosen platform (AWS, Railway, etc.)
+# Monitor production logs through your platform's interface
 
 # Function Development Testing
 # To test a specific function locally:
@@ -158,6 +160,8 @@ import('./lib/functions/index.js').then(async m => {
 - **Orders:** `lib/functions/orders.js` - Order status and tracking
 - **Store Info:** `lib/functions/store-info.js` - Location, hours, contact info
 - **Customer ID:** `lib/functions/customer-identification.js` - Customer profile management and personalization
+- **Custom PC Builder:** `lib/functions/custom-pc-builder.js` - Interactive PC configuration and custom build orders
+- **Order Tracking:** `lib/functions/order-tracking.js` - Advanced order tracking with live delivery updates
 - **Firecrawl Integration:** `lib/functions/firecrawl-integration.js` - Automated product data scraping from armenius.com.cy
 
 ### Database & Utils
@@ -206,6 +210,8 @@ export default {
 - `bookAppointment` - Service scheduling with availability checking (appointments.js:257)
 - `checkOrderStatus` - Order tracking with customer verification (orders.js:178)
 - `getStoreInfo` - Hours, location, contact info in Greek/English (store-info.js:89)
+- `buildCustomPC` - Interactive PC configuration with component guidance (custom-pc-builder.js:12)
+- `trackOrderByNumber` - Advanced order tracking with real-time delivery updates (order-tracking.js:12)
 
 ### Dual-Runtime Architecture
 The system uses a sophisticated dual-runtime setup:
@@ -253,7 +259,6 @@ TWILIO_ACCOUNT_SID=account_sid_here
 TWILIO_AUTH_TOKEN=auth_token_here
 
 # Deployment
-VERCEL_URL=armenius-voice.vercel.app
 NODE_ENV=production
 MAX_CALL_DURATION_MINUTES=15
 
@@ -268,7 +273,7 @@ FIRECRAWL_API_KEY=fc-YOUR_FIRECRAWL_API_KEY  # For product scraping
 ```
 
 ### Testing URLs and Endpoints
-- **Frontend Dashboard:** http://localhost:5173 (dev) / https://armenius-voice.vercel.app (prod)
+- **Frontend Dashboard:** http://localhost:5173 (dev) / your-production-url (prod)
 - **Test Interface:** `public/test.html` (quick voice testing)
 - **Health Check:** `/api/vapi/health` - Returns function registry stats and system status
 - **Webhook Endpoint:** `/api/vapi` (primary) or `/api/vapi/route` (direct Edge)
@@ -360,7 +365,7 @@ export default {
 ## Monitoring & Debugging
 
 ### Real-time Monitoring
-- **Vercel Logs:** `vercel logs --follow` for real-time function execution
+- **Platform Logs:** Monitor through your chosen deployment platform's interface
 - **Vapi Dashboard:** https://dashboard.vapi.ai for call management
 - **Supabase Studio:** Database performance and query optimization
 - **Custom Analytics:** Real-time dashboard at `/analytics` with call metrics

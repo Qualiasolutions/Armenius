@@ -1,12 +1,12 @@
 # Armenius Voice Assistant - Production Setup Guide
 
 ## Overview
-This guide walks through deploying the Armenius Voice Assistant to production on Vercel with Vapi.ai integration.
+This guide walks through deploying the Armenius Voice Assistant to production with Vapi.ai integration.
 
 ## Pre-Deployment Checklist
 
 ### 1. Environment Variables Setup
-Configure these required environment variables in Vercel:
+Configure these required environment variables in your deployment platform:
 
 **Required Variables:**
 ```bash
@@ -60,7 +60,7 @@ Configure your Vapi assistant with these settings:
 - **Name**: Armenius Store Assistant
 - **Voice**: 11Labs Rachel (21m00Tcm4TlvDq8ikWAM)
 - **Model**: GPT-4o-mini
-- **Webhook URL**: `https://your-domain.vercel.app/api/vapi`
+- **Webhook URL**: `https://your-domain.com/api/vapi`
 - **Functions**: All business functions are defined in `config/vapi-assistant.js`
 
 ## Deployment Process
@@ -82,11 +82,11 @@ cd frontend && npm install && cd ..
 cd frontend && npm run build && cd ..
 
 # Deploy to Vercel
-vercel --prod
+# Deploy using your chosen platform's CLI or interface
 
 # Configure environment variables
-vercel env add VAPI_API_KEY
-vercel env add SUPABASE_URL
+# Set environment variables using your platform's interface
+# Example: platform env:set VAPI_API_KEY=your_key
 # ... (add all required variables)
 ```
 
@@ -95,13 +95,13 @@ vercel env add SUPABASE_URL
 ### 1. Vapi.ai Webhook Setup
 1. Go to https://dashboard.vapi.ai
 2. Edit your assistant
-3. Set webhook URL to: `https://your-domain.vercel.app/api/vapi`
+3. Set webhook URL to: `https://your-domain.com/api/vapi`
 4. Set webhook secret to match your `VAPI_SERVER_SECRET`
 
 ### 2. Test Endpoints
 Verify these endpoints are working:
-- **Health Check**: `GET https://your-domain.vercel.app/api/vapi/health`
-- **Webhook Test**: `POST https://your-domain.vercel.app/api/vapi` (with valid Vapi payload)
+- **Health Check**: `GET https://your-domain.com/api/vapi/health`
+- **Webhook Test**: `POST https://your-domain.com/api/vapi` (with valid Vapi payload)
 
 ### 3. Phone Number Configuration
 1. **Purchase Cyprus Number**: Get a +357 Cyprus number via Vapi/Twilio
@@ -128,13 +128,13 @@ Since sample data has been removed, populate your database:
 ### Real-time Monitoring
 ```bash
 # Monitor deployment logs
-vercel logs --follow
+# Monitor logs using your platform's interface
 
 # Check function registry status
-curl https://your-domain.vercel.app/api/vapi/health
+curl https://your-domain.com/api/vapi/health
 
 # Test specific endpoints
-curl https://your-domain.vercel.app/api/cron/warmup-cache
+curl https://your-domain.com/api/cron/warmup-cache
 ```
 
 ### Key Metrics to Monitor
