@@ -66,6 +66,13 @@ export default async function handler(req, res) {
             }
         },
         
+        // Vapi configuration (public key safe to expose)
+        vapi: {
+            publicKey: process.env.VAPI_PUBLIC_KEY || '92d97105-4364-4ed0-b897-feeb4cd68ffb',
+            assistantId: '89b5d633-974a-4b58-a6b5-cdbba8c2726a',
+            available: !!process.env.VAPI_API_KEY
+        },
+        
         // System status (safe to expose)
         systemStatus: {
             hasVapiConfig: !!process.env.VAPI_API_KEY,
