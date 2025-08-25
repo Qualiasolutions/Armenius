@@ -9,7 +9,12 @@ let isCallActive = false;
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', async function() {
     initializeDashboard();
-    await initializeVapi(); // Wait for Vapi initialization
+    
+    // Wait a bit for external scripts to load (Vapi SDK)
+    setTimeout(async () => {
+        await initializeVapi(); // Wait for Vapi initialization
+    }, 1000);
+    
     loadSystemStatus();
     loadRecentActivity();
     loadProducts();
@@ -840,10 +845,16 @@ async function initializeVapi() {
             assistantId: configData?.vapi?.assistantId
         });
         
+        console.log('🔍 Debug - Checking Vapi availability:', {
+            vapiSDKLoaded: typeof window.Vapi !== 'undefined',
+            publicKey: publicKey,
+            publicKeyLength: publicKey?.length
+        });
+        
         if (typeof window.Vapi !== 'undefined' && publicKey) {
             // Initialize real Vapi with public key from backend
             vapi = new window.Vapi(publicKey);
-            console.log('✅ Real Vapi initialized with backend public key');
+            console.log('✅ Real Vapi initialized with backend public key:', publicKey.substring(0, 8) + '...');
             
             // Set up event listeners for real Vapi
             vapi.on('call-start', () => {
@@ -884,7 +895,12 @@ async function initializeVapi() {
             });
             
         } else {
-            console.warn('⚠️ No public key found or Vapi SDK not loaded - using mock interface');
+            console.warn('⚠️ Vapi SDK not loaded or no public key - using mock interface');
+            console.log('Debug info:', {
+                windowVapi: typeof window.Vapi,
+                publicKey: publicKey,
+                windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('vapi'))
+            });
             vapi = createMockVapi();
         }
         
