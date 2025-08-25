@@ -7,21 +7,21 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="description" content="AI-powered voice assistant for Armenius Store Cyprus - Product inquiries, appointments, and customer service in Greek and English" />
     
-    <!-- Tailwind CSS - Production Build -->
-    <link href="/frontend/dist/assets/index-OLBGxmRq.css" rel="stylesheet">
-    <style>
-      /* Custom Armenius colors - fallback if frontend CSS not available */
-      :root {
-        --armenius-blue: #0057FF;
-        --armenius-dark: #1a1a1a;
-        --armenius-gray: #8F8F8F;
+    <!-- Tailwind CSS - CDN (working version) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'armenius-blue': '#0057FF',
+              'armenius-dark': '#1a1a1a',
+              'armenius-gray': '#8F8F8F'
+            }
+          }
+        }
       }
-      .text-armenius-blue { color: var(--armenius-blue); }
-      .bg-armenius-blue { background-color: var(--armenius-blue); }
-      .border-armenius-blue { border-color: var(--armenius-blue); }
-      .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
-      .hover\:bg-blue-600:hover { background-color: #2563eb; }
-    </style>
+    </script>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
