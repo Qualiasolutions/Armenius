@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vapi SDK Test - Fixed Version</title>
+</head>
+<body>
+    <h1>Vapi SDK Loading Test - Fixed Version</h1>
+    <div id="results"></div>
+    <button id="testBtn" onclick="runTest()">Run Vapi Test</button>
+    
+    <!-- Use the correct Vapi SDK loading method -->
+    <script>
+      // Global Vapi variables
+      var vapiInstance = null;
+      
+      // Load Vapi SDK asynchronously (same as production)
+      (function (d, t) {
+        var g = document.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+        g.defer = true;
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+
+        g.onload = function () {
+          console.log('✅ Vapi SDK loaded successfully');
+          window.vapiSDKLoaded = true;
+          if (window.vapiSDK) {
+            console.log('🎯 Vapi SDK available as window.vapiSDK');
+          }
+          document.getElementById('results').innerHTML = '<p style="color: green;">✅ Vapi SDK loaded successfully!</p>';
+        };
+        
+        g.onerror = function() {
+          console.error('❌ Failed to load Vapi SDK');
+          window.vapiSDKLoaded = false;
+          document.getElementById('results').innerHTML = '<p style="color: red;">❌ Failed to load Vapi SDK</p>';
+        };
+      })(document, "script");
+      
+      function runTest() {
+        const results = document.getElementById('results');
+        
+        console.log('Testing Vapi SDK availability...');
+        
+        const testResults = {
+          'vapiSDKLoaded': window.vapiSDKLoaded,
+          'window.vapiSDK': typeof window.vapiSDK,
+          'All Vapi keys': Object.keys(window).filter(k => k.toLowerCase().includes('vapi')),
+        };
+        
+        console.log('🔍 Vapi SDK Test Results:', testResults);
+        
+        results.innerHTML = '<pre>' + JSON.stringify(testResults, null, 2) + '</pre>';
+        
+        // Try to create Vapi instance with test credentials
+        const testKey = '92d97105-4364-4ed0-b897-feeb4cd68ffb';
+        const testAssistantId = '89b5d633-974a-4b58-a6b5-cdbba8c2726a';
+        let initResult = 'Failed';
+        
+        try {
+          if (window.vapiSDKLoaded && window.vapiSDK) {
+            const vapi = window.vapiSDK.run({
+              apiKey: testKey,
+              assistant: testAssistantId,
+              config: {}
+            });
+            initResult = 'Success with window.vapiSDK.run()';
+            console.log('✅ Vapi instance created successfully', vapi);
+          } else {
+            initResult = 'SDK not loaded or not available';
+          }
+        } catch (error) {
+          initResult = 'Error: ' + error.message;
+          console.error('❌ Failed to create Vapi instance:', error);
+        }
+        
+        results.innerHTML += '<h3>Initialization Test:</h3><p>' + initResult + '</p>';
+      }
+    </script>
+</body>
+</html>

@@ -7,21 +7,21 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="description" content="AI-powered voice assistant for Armenius Store Cyprus - Product inquiries, appointments, and customer service in Greek and English" />
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'armenius-blue': '#0057FF',
-              'armenius-dark': '#1a1a1a',
-              'armenius-gray': '#8F8F8F'
-            }
-          }
-        }
+    <!-- Tailwind CSS - Production Build -->
+    <link href="/frontend/dist/assets/index-OLBGxmRq.css" rel="stylesheet">
+    <style>
+      /* Custom Armenius colors - fallback if frontend CSS not available */
+      :root {
+        --armenius-blue: #0057FF;
+        --armenius-dark: #1a1a1a;
+        --armenius-gray: #8F8F8F;
       }
-    </script>
+      .text-armenius-blue { color: var(--armenius-blue); }
+      .bg-armenius-blue { background-color: var(--armenius-blue); }
+      .border-armenius-blue { border-color: var(--armenius-blue); }
+      .hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+      .hover\:bg-blue-600:hover { background-color: #2563eb; }
+    </style>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,8 +29,35 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Vapi SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/index.js"></script>
+    <!-- Vapi Web SDK - Official Loading Script -->
+    <script>
+      // Global Vapi variables
+      var vapiInstance = null;
+      
+      // Load Vapi SDK asynchronously
+      (function (d, t) {
+        var g = document.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+        g.src = "https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js";
+        g.defer = true;
+        g.async = true;
+        s.parentNode.insertBefore(g, s);
+
+        g.onload = function () {
+          // Vapi SDK loaded - will be initialized later with config
+          console.log('✅ Vapi SDK loaded successfully');
+          window.vapiSDKLoaded = true;
+          if (window.vapiSDK) {
+            console.log('🎯 Vapi SDK available as window.vapiSDK');
+          }
+        };
+        
+        g.onerror = function() {
+          console.error('❌ Failed to load Vapi SDK');
+          window.vapiSDKLoaded = false;
+        };
+      })(document, "script");
+    </script>
     
     <!-- Configuration -->
     <script src="/config.js"></script>

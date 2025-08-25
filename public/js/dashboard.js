@@ -846,15 +846,26 @@ async function initializeVapi() {
         });
         
         console.log('🔍 Debug - Checking Vapi availability:', {
-            vapiSDKLoaded: typeof window.Vapi !== 'undefined',
+            vapiSDKLoaded: window.vapiSDKLoaded,
+            vapiSDKAvailable: typeof window.vapiSDK !== 'undefined',
+            allVapiKeys: Object.keys(window).filter(k => k.toLowerCase().includes('vapi')),
             publicKey: publicKey,
-            publicKeyLength: publicKey?.length
+            publicKeyLength: publicKey?.length,
+            assistantId: configData?.vapi?.assistantId
         });
         
-        if (typeof window.Vapi !== 'undefined' && publicKey) {
-            // Initialize real Vapi with public key from backend
-            vapi = new window.Vapi(publicKey);
-            console.log('✅ Real Vapi initialized with backend public key:', publicKey.substring(0, 8) + '...');
+        // Use the new Vapi SDK initialization method
+        if (window.vapiSDKLoaded && window.vapiSDK && publicKey && configData?.vapi?.assistantId) {
+            // Initialize real Vapi with public key and assistant ID from backend
+            vapi = window.vapiSDK.run({
+                apiKey: publicKey,
+                assistant: configData.vapi.assistantId,
+                config: {}
+            });
+            console.log('✅ Real Vapi initialized with backend config:', {
+                publicKey: publicKey.substring(0, 8) + '...',
+                assistantId: configData.vapi.assistantId
+            });
             
             // Set up event listeners for real Vapi
             vapi.on('call-start', () => {
@@ -895,10 +906,12 @@ async function initializeVapi() {
             });
             
         } else {
-            console.warn('⚠️ Vapi SDK not loaded or no public key - using mock interface');
+            console.warn('⚠️ Vapi SDK not loaded or missing config - using mock interface');
             console.log('Debug info:', {
-                windowVapi: typeof window.Vapi,
-                publicKey: publicKey,
+                vapiSDKLoaded: window.vapiSDKLoaded,
+                vapiSDKAvailable: typeof window.vapiSDK !== 'undefined',
+                publicKey: !!publicKey,
+                assistantId: !!configData?.vapi?.assistantId,
                 windowKeys: Object.keys(window).filter(k => k.toLowerCase().includes('vapi'))
             });
             vapi = createMockVapi();
@@ -946,28 +959,15 @@ async function handleVoiceCall() {
         
         console.log('🎯 Starting call with assistant:', assistantId);
         
-        // Start the call with assistant ID (preferred for production)
-        if (assistantId) {
-            vapi.start({
-                assistantId: assistantId
-            });
+        // Start the call - with new SDK, the assistant is already configured
+        if (vapi && typeof vapi.start === 'function') {
+            vapi.start();
+        } else if (vapi && typeof vapi.call === 'function') {
+            // Alternative method for different SDK versions
+            vapi.call();
         } else {
-            // Fallback to direct assistant configuration if no ID
-            console.warn('⚠️ No assistant ID found, using fallback configuration');
-            vapi.start({
-                assistant: {
-                    name: "Armenius Store Assistant",
-                    voice: {
-                        provider: "11labs",
-                        voiceId: "21m00Tcm4TlvDq8ikWAM"
-                    },
-                    model: {
-                        provider: "openai", 
-                        model: "gpt-4o-mini"
-                    },
-                    firstMessage: "Welcome to Armenius Store! I'm Maria, your AI assistant. How can I help you today?"
-                }
-            });
+            console.error('❌ No valid vapi instance available');
+            throw new Error('Vapi not initialized properly');
         }
         
     } catch (error) {
